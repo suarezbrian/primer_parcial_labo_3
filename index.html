@@ -1,0 +1,529 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Primer Parcial - Labo III Suarez Brian Alan</title>
+    <link rel="stylesheet" type="text/css" href="style.css">
+</head>
+<!DOCTYPE html>
+<html lang="es">
+<head>
+</head>
+<body>
+    <div id="formDatos">
+        <h2>Form Datos</h2>
+
+        <!-- FILTRO -->
+        <label for="filtro">Filtrar por:</label>
+        <select id="filtro">
+            <option value="Todos">Todos</option>
+            <option value="Terrestre">Terrestre</option>
+            <option value="Aereo">Aereo</option>
+        </select>
+        </br>
+
+        <!-- INPUTS -->
+        <label for="velocidadMaxima">Promedio de velocidad máxima:</label>
+        <input type="text" id="velocidadMaxima" readonly>
+        <button id="btnCalcularPromedio">Calcular</button>
+        </br>
+        </br>
+
+        <!-- CHECKBOXES -->
+        <div>
+          <label for="chkID">ID</label>
+          <input type="checkbox" id="chkID" checked onchange="mostrarOcultarColumna(0)" />
+
+          <label for="chkModelo">Modelo</label>
+          <input type="checkbox" id="chkModelo" checked onchange="mostrarOcultarColumna(1)" />
+
+          <label for="chkAnoFab">Año de Fabricación</label>
+          <input type="checkbox" id="chkAnoFab" checked onchange="mostrarOcultarColumna(2)" />
+
+          <label for="chkVelMax">Velocidad Máxima</label>
+          <input type="checkbox" id="chkVelMax" checked onchange="mostrarOcultarColumna(3)" />
+
+          <label for="chkAltMax">Altitud Máxima</label>
+          <input type="checkbox" id="chkAltMax" checked onchange="mostrarOcultarColumna(4)" />
+
+          <label for="chkAutonomia">Autonomía</label>
+          <input type="checkbox" id="chkAutonomia" checked onchange="mostrarOcultarColumna(5)" />
+
+          <label for="chkCantPue">Cantidad de Puertas</label>
+          <input type="checkbox" id="chkCantPue" checked onchange="mostrarOcultarColumna(6)" />
+
+          <label for="chkCantRue">Cantidad de Ruedas</label>
+          <input type="checkbox" id="chkCantRue" checked onchange="mostrarOcultarColumna(7)" />
+        </div>
+        </br>
+
+        <!-- TABLA -->
+        <table id="tablaResultados">
+            <thead>
+            </thead>
+            <tbody>
+            </tbody>
+        </table>
+
+        <!-- BOTON ABM -->
+        </br>
+        <button id="btnAbrirABM" onclick="mostrarFormularioABM('alta')">Agregar</button>
+    </div>
+
+    <!-- FORMULARIO ABM -->
+    <div id="formularioABM" style="display: none;">
+      <h2>Formulario ABM</h2>
+      <label for="abmId">ID:</label>
+      <input type="number" id="abmId" placeholder="ID" readonly><br>
+
+      <label for="abmModelo">Modelo:</label>
+      <input type="text" id="abmModelo" placeholder="Modelo"><br>
+
+      <label for="abmAnoFab">Año de Fabricación:</label>
+      <input type="number" id="abmAnoFab" placeholder="Año de Fabricación"><br>
+
+      <label for="abmVelMax">Velocidad Máxima:</label>
+      <input type="number" id="abmVelMax" placeholder="Velocidad Máxima"><br>
+
+      <label for="abmAltMax">Altitud Máxima:</label>
+      <input type="number" id="abmAltMax" placeholder="Altitud Máxima"><br>
+
+      <label for="abmAutonomia">Autonomía:</label>
+      <input type="number" id="abmAutonomia" placeholder="Autonomía"><br>
+
+      <label for="abmCantPue">Cantidad de Pasajeros:</label>
+      <input type="number" id="abmCantPue" placeholder="Cantidad de Pasajeros"><br>
+
+      <label for="abmCantRue">Cantidad de Ruedas:</label>
+      <input type="number" id="abmCantRue" placeholder="Cantidad de Ruedas"><br>
+      <span id="errorMensaje" style="color: red;"></span>
+      <button onclick="guardarDatosABM()">Guardar</button>
+      <button onclick="cerrarFormularioABM()">Cancelar</button>
+    </div>
+</body>
+<script>
+
+//CLASES
+class Vehiculo {
+  constructor(id, modelo, anoFab, velMax) {
+    this.setId(id);
+    this.setModelo(modelo);
+    this.setAnoFab(anoFab);
+    this.setVelMax(velMax);
+  }
+
+  setId(id) {
+    if (typeof id !== 'number' || id <= 0) {
+      throw new Error('El ID debe ser un número mayor a 0.');
+    }
+    this.id = id;
+  }
+
+  setModelo(modelo) {
+    if (typeof modelo !== 'string' || modelo === '') {
+      throw new Error('El modelo no puede estar vacío y debe ser una cadena de texto.');
+    }
+    this.modelo = modelo;
+  }
+
+  setAnoFab(anoFab) {
+    if (typeof anoFab !== 'number' || anoFab <= 1885) {
+      throw new Error('El año de fabricación debe ser un número mayor a 1885.');
+    }
+    this.anoFab = anoFab;
+  }
+
+  setVelMax(velMax) {
+    if (typeof velMax !== 'number' || velMax <= 0) {
+      throw new Error('La velocidad máxima debe ser un número mayor a 0.');
+    }
+    this.velMax = velMax;
+  }
+
+  toString() {
+    return `ID: ${this.id}, Modelo: ${this.modelo}, Año de Fabricación: ${this.anoFab}, Velocidad Máxima: ${this.velMax}`;
+  }
+}
+
+class Aereo extends Vehiculo {
+  constructor(id, modelo, anoFab, velMax, altMax, autonomia) {
+    super(id, modelo, anoFab, velMax);
+    this.setAltMax(altMax);
+    this.setAutonomia(autonomia);
+  }
+
+  setAltMax(altMax) {
+    if (typeof altMax !== 'number' || altMax <= 0) {
+      throw new Error('La altitud máxima debe ser un número mayor a 0.');
+    }
+    this.altMax = altMax;
+  }
+
+  setAutonomia(autonomia) {
+    if (typeof autonomia !== 'number' || autonomia <= 0) {
+      throw new Error('La autonomía debe ser un número mayor a 0.');
+    }
+    this.autonomia = autonomia;
+  }
+}
+
+class Terrestre extends Vehiculo {
+  constructor(id, modelo, anoFab, velMax, cantPue, cantRue) {
+    super(id, modelo, anoFab, velMax);
+    this.setCantPue(cantPue);
+    this.setCantRue(cantRue);
+  }
+
+  setCantPue(cantPue) {
+    if (typeof cantPue !== 'number' || cantPue <= -1) {
+      throw new Error('La cantidad de pasajeros debe ser un número mayor a -1.');
+    }
+    this.cantPue = cantPue;
+  }
+
+  setCantRue(cantRue) {
+    if (typeof cantRue !== 'number' || cantRue <= 0) {
+      throw new Error('La cantidad de ruedas debe ser un número mayor a 0.');
+    }
+    this.cantRue = cantRue;
+  }
+}
+
+//CARGO MI ARRAY DE VEHICULOS
+const jsonString = '[{"id":14, "modelo":"Ferrari F100", "anoFab":1998, "velMax":400, "cantPue":2, "cantRue":4},{"id":51, "modelo":"Dodge Viper", "anoFab":1991, "velMax":266, "cantPue":2, "cantRue":4},{"id":67, "modelo":"Boeing CH-47 Chinook", "anoFab":1962, "velMax":302, "altMax":6, "autonomia":1200},{"id":666, "modelo":"Aprilia RSV 1000 R", "anoFab":2004, "velMax":280, "cantPue":0, "cantRue":2},{"id":872, "modelo":"Boeing 747-400", "anoFab":1989, "velMax":988, "altMax":13, "autonomia":13450},{"id":742, "modelo":"Cessna CH-1 SkyhookR", "anoFab":1953, "velMax":174, "altMax":3, "autonomia":870}]';
+
+const data = JSON.parse(jsonString);
+
+function esTerrestre(obj) {
+  return 'cantPue' in obj && 'cantRue' in obj;
+}
+
+let vehiculos = data.map(obj => {
+  if (esTerrestre(obj)) {
+    return new Terrestre(obj.id, obj.modelo, obj.anoFab, obj.velMax, obj.cantPue, obj.cantRue);
+  } else {
+    return new Aereo(obj.id, obj.modelo, obj.anoFab, obj.velMax, obj.altMax, obj.autonomia);
+  }
+});
+
+console.log(vehiculos);
+
+
+//FILTRO DE LA TABLA
+const filtroSelect = document.getElementById("filtro");
+const tablaResultados = document.getElementById("tablaResultados");
+const velocidadMaximaInput = document.getElementById("velocidadMaxima");
+const btnCalcularPromedio = document.getElementById("btnCalcularPromedio");
+
+filtroSelect.addEventListener("change", () => {
+  actualizarTabla();
+});
+
+function filtrarDatos() {
+  const filtroClase = filtroSelect.value;
+
+  if (filtroClase === "Todos") {
+    return vehiculos;
+  } else {
+    return vehiculos.filter(vehiculo => {
+      if (
+        (filtroClase === "Terrestre" && vehiculo instanceof Terrestre) ||
+        (filtroClase === "Aereo" && vehiculo instanceof Aereo)
+      ) {
+        return true;
+      }
+      return false;
+    });
+  }
+}
+
+//CREO LA TABLA
+function llenarTabla(datos) {
+  tablaResultados.innerHTML = "";
+
+  const encabezado = document.createElement("tr");
+    encabezado.innerHTML = `
+      <th data-type="number" id="thId">
+        ID 
+        <button class="btnOrdenar" data-column="id">▲</button>
+      </th>
+      <th data-type="text" id="thModelo">
+        Modelo 
+        <button class="btnOrdenar" data-column="modelo">▲</button>
+      </th>
+      <th data-type="text" id="thAnoFab">
+        Año de Fabricación 
+        <button class="btnOrdenar" data-column="anoFab">▲</button>
+      </th>
+      <th data-type="number" id="thVelMax">
+        Velocidad Maxima 
+        <button class="btnOrdenar" data-column="velMax">▲</button>
+      </th>
+      <th data-type="number" id="thAltMax">
+        Altitud Maxima 
+        <button class="btnOrdenar" data-column="altMax">▲</button>
+      </th>
+      <th data-type="text" id="thModelo">
+        Autonomia 
+        <button class="btnOrdenar" data-column="modelo">▲</button>
+      </th>
+      <th data-type="number" id="thCantPue">
+        Cantidad de Puertas 
+        <button class="btnOrdenar" data-column="cantPue">▲</button>
+      </th>
+      <th data-type="number" id="thCantRue">
+        Cantidad de Ruedas
+        <button class="btnOrdenar" data-column="cantRue">▲</button>
+      </th>      
+      <th>Modificar</th>
+      <th>Borrar</th>
+    `;
+
+  tablaResultados.appendChild(encabezado);
+  datos.forEach(vehiculo => {
+    const fila = document.createElement("tr");
+    fila.innerHTML = `
+      <td>${vehiculo.id || "-"}</td>
+      <td>${vehiculo.modelo || "-"}</td>
+      <td>${vehiculo.anoFab || "-"}</td>
+      <td>${vehiculo.velMax || "-"}</td>
+      <td>${vehiculo.altMax || ""}</td>
+      <td>${vehiculo.autonomia || "-"}</td>
+      <td>${vehiculo.cantPue || "-"}</td>
+      <td>${vehiculo.cantRue || "-"}</td>  
+      <td><button onclick="modificar(${vehiculo.id})">Modificar</button></td>
+      <td><button onclick="borrar(${vehiculo.id})">Borrar</button></td>    
+    `;
+    tablaResultados.appendChild(fila);
+  });
+}
+
+function actualizarTabla() {
+  const datosFiltrados = filtrarDatos();
+  llenarTabla(datosFiltrados);
+}
+
+btnCalcularPromedio.addEventListener("click", () => {
+  calcularPromedioVelocidad();
+});
+
+function calcularPromedioVelocidad() {
+  const datosFiltrados = filtrarDatos();
+  const velocidadMaximaTotal = datosFiltrados.reduce((total, vehiculo) => total + (vehiculo.velMax || 0),0);
+  const promedioVelocidad = velocidadMaximaTotal / datosFiltrados.length;
+  velocidadMaximaInput.value = promedioVelocidad.toFixed(2);
+}
+
+llenarTabla(vehiculos);
+
+//FUNCIONALIDAD CHECKBOX
+function mostrarOcultarColumna(indice) {
+  const tabla = document.getElementById("tablaDatos");
+  const filas = tablaResultados.rows;
+
+  const chkID = document.getElementById("chkID").checked;
+  const chkModelo = document.getElementById("chkModelo").checked;
+  const chkAnoFab = document.getElementById("chkAnoFab").checked;
+  const chkVelMax = document.getElementById("chkVelMax").checked;
+  const chkAltMax = document.getElementById("chkAltMax").checked;
+  const chkAutonomia = document.getElementById("chkAutonomia").checked;
+  const chkCantPue = document.getElementById("chkCantPue").checked;
+  const chkCantRue = document.getElementById("chkCantRue").checked;
+
+  const checkboxes = [chkID, chkModelo, chkAnoFab, chkVelMax, chkAltMax, chkAutonomia, chkCantPue, chkCantRue];
+
+  for (let i = 0; i < filas.length; i++) {
+    const celda = filas[i].cells[indice];
+    if (celda) {
+      if (checkboxes[indice]) {
+        celda.style.display = "";
+      } else {
+        celda.style.display = "none";
+      }
+    }
+  }
+}
+
+//FORMULARIO ABM
+const formularioABM = document.getElementById("formularioABM");
+let accionForm;
+
+function mostrarFormularioABM(accion) {
+  if(accion !== "modificacion"){
+    harcodeoDatos();    
+  }
+
+  accionForm=accion;
+  btnAbrirABM.style.display = "none";
+  formDatos.style.display = "none";
+  formularioABM.style.display = "block";
+
+}
+
+function cerrarFormularioABM() {
+  formularioABM.style.display = "none";
+  formDatos.style.display = "block";
+   btnAbrirABM.style.display = "block";
+}
+
+//FUNCION PARA GENERAR UN ID UNICO
+function encontrarIdMasAlto() {
+  const ids = vehiculos.map(item => item.id);
+  const maxId = Math.max(...ids);
+  return maxId;
+}
+
+function generarIdUnico() {
+  const nuevoId = encontrarIdMasAlto() + 1;
+  return nuevoId;
+}
+
+//DATOS PARA PROBAR MI ABM
+function harcodeoDatos() {
+  const abmId = generarIdUnico();
+  document.getElementById("abmId").value = abmId;
+  console.log(abmId);
+  
+  document.getElementById("abmModelo").value = "FERRARI MADE IN ARG";
+  document.getElementById("abmAnoFab").value = 2023;
+  document.getElementById("abmVelMax").value = 300;
+  document.getElementById("abmAltMax").value = 5000;
+  document.getElementById("abmAutonomia").value = 1000;
+  document.getElementById("abmCantPue").value = 4;
+  document.getElementById("abmCantRue").value = 4;
+}
+
+//GUARDAR DATOS ABM
+function guardarDatosABM() {
+  const abmId = parseInt(document.getElementById("abmId").value, 10);
+  const abmModelo = document.getElementById("abmModelo").value;
+  const abmAnoFab = parseInt(document.getElementById("abmAnoFab").value, 10);
+  const abmVelMax = parseInt(document.getElementById("abmVelMax").value, 10);
+  const abmAltMax = parseFloat(document.getElementById("abmAltMax").value);
+  const abmAutonomia = parseFloat(document.getElementById("abmAutonomia").value);
+  const abmCantPue = parseInt(document.getElementById("abmCantPue").value, 10);
+  const abmCantRue = parseInt(document.getElementById("abmCantRue").value, 10);
+
+  let obj;
+
+  if (abmCantPue >= 0 && abmCantRue > 0) {
+    obj = new Terrestre(
+      abmId,
+      abmModelo,
+      abmAnoFab,
+      abmVelMax,
+      abmCantPue,
+      abmCantRue
+    );
+  } else if (abmAltMax > 0 && abmAutonomia > 0) {
+    obj = new Aereo(
+      abmId,
+      abmModelo,
+      abmAnoFab,
+      abmVelMax,
+      abmAltMax,
+      abmAutonomia
+    );
+  } 
+
+  if(accionForm !== "alta"){
+
+    const vehiculoExistente = vehiculos.find(vehiculo => vehiculo.id === abmId);
+    
+    if (vehiculoExistente) {     
+      vehiculoExistente.modelo = abmModelo;
+      vehiculoExistente.anoFab = abmAnoFab;
+      vehiculoExistente.velMax = abmVelMax;
+      vehiculoExistente.altMax = abmAltMax;
+      vehiculoExistente.autonomia = abmAutonomia;
+      vehiculoExistente.cantPue = abmCantPue;
+      vehiculoExistente.cantRue = abmCantRue;
+    }
+  }
+  else{
+    vehiculos.push(obj);
+  }
+
+  console.log(vehiculos);
+  actualizarTabla();
+  cerrarFormularioABM();
+}
+
+//BORRAR DATOS ABM
+function borrar(id) {
+  const indice = vehiculos.findIndex(vehiculo => vehiculo.id === id);
+  if (indice !== -1) {
+    vehiculos.splice(indice, 1);
+    llenarTabla(vehiculos);
+  }
+}
+
+//MODIFICAR DATOS ABM
+function modificar(id) {
+  const vehiculo = vehiculos.find(vehiculo => vehiculo.id === id);
+  if (vehiculo) {
+    document.getElementById("abmId").value = vehiculo.id;
+    document.getElementById("abmModelo").value = vehiculo.modelo;
+    document.getElementById("abmAnoFab").value = vehiculo.anoFab;
+    document.getElementById("abmVelMax").value = vehiculo.velMax;
+    document.getElementById("abmAltMax").value = vehiculo.altMax;
+    document.getElementById("abmAutonomia").value = vehiculo.autonomia;
+    document.getElementById("abmCantPue").value = vehiculo.cantPue;
+    document.getElementById("abmCantRue").value = vehiculo.cantRue;
+
+    mostrarFormularioABM("modificacion");
+  }
+}
+
+//ORDENAR ARRAY
+function ordenarArray(data, column, esAscendente) {
+  return data.sort((objetoA, objetoB) => {
+
+    const valorA = objetoA[column] ? objetoA[column] : 0;
+    const valorB = objetoB[column] ? objetoB[column] : 0;
+
+    console.log(`valor  a : ${objetoA}`);
+    console.log(`valor  b : ${objetoB}`);
+    console.log(`valor column a : ${objetoA[column]}`);
+    console.log(`valor column b : ${objetoB[column]}`);
+
+    if (valorA < valorB){
+      return esAscendente ? -1 : 1;
+    }
+    if (valorA > valorB){
+      return esAscendente ? 1 : -1;
+    }
+    return 0;
+  });
+}
+
+let columnaActual = ''; 
+let esAscendente = true; 
+
+tablaResultados.addEventListener('click', (event) => {
+  const target = event.target;
+
+  if (target.classList.contains('btnOrdenar')) {
+    const columnaOrdenar = target.getAttribute('data-column');
+
+    if (columnaOrdenar === columnaActual) {
+      esAscendente = !esAscendente;
+    } else {
+      esAscendente = true;
+      columnaActual = columnaOrdenar;
+    }
+
+    const btnOrdenar = document.querySelectorAll('.btnOrdenar');
+    btnOrdenar.forEach(button => button.classList.remove('ordenarAsc', 'ordenarDesc'));
+
+    target.classList.add(esAscendente ? 'ordenarAsc' : 'ordenarDesc');
+
+    vehiculos = ordenarArray(vehiculos, columnaActual, esAscendente);
+    actualizarTabla();
+  }
+});
+
+
+</script>
+</html>
